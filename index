@@ -1,0 +1,3807 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบจองโต๊ะและพื้นที่ส่วนกลาง</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root{
+  --primary:#f97316;
+  --primary-dark:#ea580c;
+  --primary-light:#fff7ed;
+  --bg:#f8fafc;
+  --card:#ffffff;
+  --text:#1e293b;
+  --muted:#64748b;
+  --border:#e2e8f0;
+
+  --green:#16a34a;
+  --green-bg:#dcfce7;
+
+  --red:#dc2626;
+  --red-bg:#fee2e2;
+
+  --gray:#64748b;
+  --gray-bg:#e2e8f0;
+
+  --yellow:#d97706;
+  --yellow-bg:#fef3c7;
+
+  --blue:#2563eb;
+  --blue-bg:#dbeafe;
+
+  --shadow:0 10px 30px rgba(15,23,42,.08);
+}
+
+body.dark{
+  --bg:#0f172a;
+  --card:#1e293b;
+  --text:#f8fafc;
+  --muted:#94a3b8;
+  --border:#334155;
+  --primary-light:#431407;
+  --green-bg:#14532d;
+  --red-bg:#450a0a;
+  --gray-bg:#334155;
+  --yellow-bg:#451a03;
+  --blue-bg:#172554;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+body{
+  font-family:"Kanit",sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  transition:.2s;
+}
+
+button,input,select{
+  font-family:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
+.hidden{
+  display:none!important;
+}
+
+.container{
+  width:min(1200px,94%);
+  margin:auto;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  box-shadow:var(--shadow);
+}
+
+.btn{
+  border:0;
+  border-radius:10px;
+  padding:10px 16px;
+  font-size:14px;
+  transition:.2s;
+}
+
+.btn:hover{
+  transform:translateY(-1px);
+}
+
+.btn-primary{
+  background:var(--primary);
+  color:#fff;
+}
+
+.btn-primary:hover{
+  background:var(--primary-dark);
+}
+
+.btn-success{
+  background:var(--green);
+  color:#fff;
+}
+
+.btn-danger{
+  background:var(--red);
+  color:#fff;
+}
+
+.btn-warning{
+  background:var(--yellow);
+  color:#fff;
+}
+
+.btn-secondary{
+  background:var(--gray-bg);
+  color:var(--text);
+}
+
+.btn-outline{
+  background:transparent;
+  color:var(--text);
+  border:1px solid var(--border);
+}
+
+.btn-sm{
+  padding:7px 11px;
+  font-size:12px;
+}
+
+input,select{
+  width:100%;
+  padding:11px 13px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  outline:none;
+  background:var(--card);
+  color:var(--text);
+}
+
+input:focus,select:focus{
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(249,115,22,.12);
+}
+
+.form-group{
+  margin-bottom:15px;
+}
+
+.form-group label{
+  display:block;
+  margin-bottom:6px;
+  font-size:13px;
+}
+
+/* =========================
+   AUTH
+========================= */
+
+#authScreen{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:
+    radial-gradient(circle at top right,#fed7aa,transparent 35%),
+    var(--bg);
+}
+
+.auth-wrapper{
+  width:min(950px,100%);
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  overflow:hidden;
+  background:var(--card);
+  border-radius:25px;
+  box-shadow:0 25px 60px rgba(0,0,0,.13);
+}
+
+.auth-brand{
+  padding:50px;
+  color:#fff;
+  background:linear-gradient(145deg,#fb923c,#ea580c);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+.auth-brand .logo{
+  font-size:50px;
+  margin-bottom:15px;
+}
+
+.auth-brand h1{
+  font-size:32px;
+  line-height:1.3;
+  margin-bottom:15px;
+}
+
+.auth-brand p{
+  line-height:1.8;
+  opacity:.9;
+}
+
+.auth-box{
+  padding:45px;
+}
+
+.auth-box h2{
+  font-size:28px;
+  margin-bottom:5px;
+}
+
+.auth-subtitle{
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:25px;
+}
+
+.auth-tabs{
+  display:flex;
+  gap:5px;
+  padding:4px;
+  background:var(--gray-bg);
+  border-radius:10px;
+  margin-bottom:22px;
+}
+
+.auth-tabs button{
+  flex:1;
+  border:0;
+  background:transparent;
+  color:var(--text);
+  padding:9px;
+  border-radius:8px;
+}
+
+.auth-tabs button.active{
+  background:var(--card);
+  color:var(--primary);
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.auth-message{
+  display:none;
+  padding:10px;
+  margin-bottom:15px;
+  border-radius:8px;
+  font-size:13px;
+}
+
+.auth-message.show{
+  display:block;
+}
+
+.auth-message.error{
+  color:var(--red);
+  background:var(--red-bg);
+}
+
+.auth-message.success{
+  color:var(--green);
+  background:var(--green-bg);
+}
+
+/* =========================
+   NAVBAR
+========================= */
+
+.navbar{
+  position:sticky;
+  top:0;
+  z-index:100;
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+}
+
+.nav-inner{
+  min-height:68px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+}
+
+.logo-text{
+  color:var(--primary);
+  font-weight:600;
+  white-space:nowrap;
+}
+
+.nav-links{
+  display:flex;
+  gap:5px;
+}
+
+.nav-links button{
+  border:0;
+  background:transparent;
+  color:var(--text);
+  padding:9px 12px;
+  border-radius:8px;
+}
+
+.nav-links button:hover,
+.nav-links button.active{
+  background:var(--primary-light);
+  color:var(--primary);
+}
+
+.nav-actions{
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+
+.user-badge{
+  color:var(--primary);
+  background:var(--primary-light);
+  padding:7px 11px;
+  border-radius:20px;
+  font-size:12px;
+}
+
+/* =========================
+   MAIN
+========================= */
+
+main{
+  padding:35px 0 60px;
+}
+
+.section-title{
+  margin-bottom:20px;
+}
+
+.section-title h2{
+  font-size:26px;
+}
+
+.section-title p{
+  color:var(--muted);
+  font-size:13px;
+}
+
+/* =========================
+   SEARCH
+========================= */
+
+.search-card{
+  padding:20px;
+  margin-bottom:22px;
+}
+
+.search-grid{
+  display:grid;
+  grid-template-columns:1.2fr 1fr 1fr 1.3fr auto;
+  gap:12px;
+  align-items:end;
+}
+
+/* =========================
+   FLOOR PLAN
+========================= */
+
+.floor-layout{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:20px;
+}
+
+.floor-card{
+  padding:22px;
+}
+
+.floor-plan{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:15px;
+  margin-top:20px;
+}
+
+.table-seat{
+  min-height:125px;
+  border-radius:15px;
+  padding:12px;
+  border:3px solid transparent;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  transition:.2s;
+}
+
+.table-seat.available{
+  background:var(--green-bg);
+  color:var(--green);
+  border-color:#86efac;
+}
+
+.table-seat.booked{
+  background:var(--red-bg);
+  color:var(--red);
+  border-color:#fca5a5;
+  cursor:not-allowed;
+}
+
+.table-seat.maintenance{
+  background:var(--gray-bg);
+  color:var(--gray);
+  border-color:var(--border);
+  cursor:not-allowed;
+}
+
+.table-seat.selected{
+  border-color:var(--primary);
+  box-shadow:0 0 0 4px rgba(249,115,22,.15);
+  transform:translateY(-2px);
+}
+
+.table-icon{
+  font-size:28px;
+}
+
+.table-name{
+  font-weight:600;
+}
+
+.table-type{
+  font-size:11px;
+  opacity:.8;
+}
+
+.legend{
+  display:flex;
+  flex-wrap:wrap;
+  gap:15px;
+  margin-top:20px;
+  color:var(--muted);
+  font-size:12px;
+}
+
+.legend-item{
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+
+.legend-color{
+  width:14px;
+  height:14px;
+  border-radius:4px;
+}
+
+.booking-summary{
+  padding:22px;
+  height:max-content;
+}
+
+.summary-row{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 0;
+  border-bottom:1px solid var(--border);
+  font-size:13px;
+}
+
+.summary-row span{
+  color:var(--muted);
+}
+
+.summary-empty{
+  color:var(--muted);
+  text-align:center;
+  padding:30px 5px;
+  font-size:13px;
+}
+
+/* =========================
+   BOOKINGS
+========================= */
+
+.booking-list{
+  display:grid;
+  gap:15px;
+}
+
+.booking-card{
+  padding:20px;
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:15px;
+  align-items:center;
+}
+
+.booking-card h3{
+  margin-bottom:5px;
+}
+
+.booking-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:8px;
+}
+
+.booking-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+
+.status{
+  display:inline-block;
+  border-radius:20px;
+  padding:4px 9px;
+  font-size:11px;
+}
+
+.status-approved{
+  color:var(--green);
+  background:var(--green-bg);
+}
+
+.status-pending{
+  color:var(--yellow);
+  background:var(--yellow-bg);
+}
+
+.status-cancelled,
+.status-rejected,
+.status-noshow{
+  color:var(--red);
+  background:var(--red-bg);
+}
+
+.status-checked{
+  color:var(--blue);
+  background:var(--blue-bg);
+}
+
+/* =========================
+   ADMIN DASHBOARD
+========================= */
+
+.kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:18px;
+  margin-bottom:20px;
+}
+
+.kpi{
+  padding:22px;
+}
+
+.kpi-icon{
+  width:44px;
+  height:44px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:12px;
+  background:var(--primary-light);
+  color:var(--primary);
+  font-size:20px;
+  margin-bottom:12px;
+}
+
+.kpi h3{
+  font-size:30px;
+}
+
+.kpi p{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.charts-grid{
+  display:grid;
+  grid-template-columns:1fr 1.5fr;
+  gap:20px;
+}
+
+.chart-card{
+  padding:22px;
+  min-height:350px;
+}
+
+.chart-card h3{
+  margin-bottom:15px;
+}
+
+.chart-wrapper{
+  position:relative;
+  height:270px;
+}
+
+/* =========================
+   ADMIN MANAGEMENT
+========================= */
+
+.admin-section{
+  padding:22px;
+  margin-bottom:20px;
+}
+
+.admin-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  margin-bottom:18px;
+}
+
+.management-grid{
+  display:grid;
+  grid-template-columns:1fr 2fr;
+  gap:20px;
+}
+
+.form-card{
+  padding:20px;
+}
+
+.admin-table-list{
+  display:grid;
+  gap:10px;
+}
+
+.admin-table-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px;
+}
+
+.table-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+}
+
+/* =========================
+   DATA TABLE
+========================= */
+
+.table-wrapper{
+  overflow-x:auto;
+}
+
+.data-table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:800px;
+}
+
+.data-table th,
+.data-table td{
+  padding:11px;
+  border-bottom:1px solid var(--border);
+  text-align:left;
+  font-size:12px;
+}
+
+.data-table th{
+  background:var(--primary-light);
+  color:var(--muted);
+}
+
+/* =========================
+   TOAST
+========================= */
+
+#toastContainer{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  z-index:9999;
+  display:grid;
+  gap:8px;
+}
+
+.toast{
+  min-width:250px;
+  max-width:350px;
+  padding:13px 15px;
+  border-radius:10px;
+  background:var(--card);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+  font-size:13px;
+  animation:toastIn .25s ease;
+}
+
+.toast.success{
+  border-left:4px solid var(--green);
+}
+
+.toast.error{
+  border-left:4px solid var(--red);
+}
+
+@keyframes toastIn{
+  from{
+    opacity:0;
+    transform:translateY(15px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+/* =========================
+   TABLET
+========================= */
+
+@media(max-width:992px){
+
+  .nav-inner{
+    flex-wrap:wrap;
+    padding:9px 0;
+  }
+
+  .nav-links{
+    width:100%;
+    order:3;
+    overflow-x:auto;
+  }
+
+  .search-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .floor-layout,
+  .charts-grid,
+  .management-grid{
+    grid-template-columns:1fr;
+  }
+
+  .floor-plan{
+    grid-template-columns:repeat(3,1fr);
+  }
+
+  .kpi-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:576px){
+
+  .container{
+    width:94%;
+  }
+
+  main{
+    padding-top:22px;
+  }
+
+  .auth-wrapper{
+    grid-template-columns:1fr;
+  }
+
+  .auth-brand{
+    display:none;
+  }
+
+  .auth-box{
+    padding:30px 22px;
+  }
+
+  .search-grid{
+    grid-template-columns:1fr;
+  }
+
+  .floor-plan{
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+  }
+
+  .table-seat{
+    min-height:105px;
+  }
+
+  .kpi-grid{
+    grid-template-columns:1fr;
+  }
+
+  .booking-card{
+    grid-template-columns:1fr;
+  }
+
+  .user-badge{
+    display:none;
+  }
+
+  .logo-text{
+    font-size:15px;
+  }
+
+  .section-title h2{
+    font-size:22px;
+  }
+
+  .admin-header{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .admin-table-item{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =========================================================
+     AUTH SCREEN
+========================================================= -->
+
+<section id="authScreen">
+
+  <div class="auth-wrapper">
+
+    <div class="auth-brand">
+      <div class="logo">🪑</div>
+
+      <h1>
+        ระบบจองโต๊ะ<br>
+        และพื้นที่ส่วนกลาง
+      </h1>
+
+      <p>
+        ระบบจองพื้นที่ส่วนกลางสำหรับนักศึกษา
+        พนักงาน และผู้ดูแลระบบ
+        พร้อมระบบจัดการการจองแบบครบวงจร
+      </p>
+    </div>
+
+    <div class="auth-box">
+
+      <h2 id="authTitle">เข้าสู่ระบบ</h2>
+
+      <div class="auth-subtitle">
+        Common Space Reservation System
+      </div>
+
+      <div class="auth-tabs">
+        <button id="loginTab"
+                class="active"
+                onclick="switchAuth('login')">
+          เข้าสู่ระบบ
+        </button>
+
+        <button id="registerTab"
+                onclick="switchAuth('register')">
+          สมัครสมาชิก
+        </button>
+      </div>
+
+      <div id="authMessage"
+           class="auth-message"></div>
+
+      <!-- LOGIN -->
+
+      <form id="loginForm"
+            onsubmit="login(event)">
+
+        <div class="form-group">
+          <label>Email</label>
+
+          <input id="loginEmail"
+                 type="email"
+                 placeholder="example@email.com"
+                 required>
+        </div>
+
+        <div class="form-group">
+          <label>รหัสผ่าน</label>
+
+          <input id="loginPassword"
+                 type="password"
+                 placeholder="••••••••"
+                 required>
+        </div>
+
+        <button class="btn btn-primary"
+                style="width:100%"
+                type="submit">
+          เข้าสู่ระบบ
+        </button>
+
+        <p style="
+          color:var(--muted);
+          font-size:11px;
+          text-align:center;
+          margin-top:15px;
+        ">
+          Demo Admin:
+          admin@demo.com / admin123
+        </p>
+
+      </form>
+
+      <!-- REGISTER -->
+
+      <form id="registerForm"
+            class="hidden"
+            onsubmit="register(event)">
+
+        <div class="form-group">
+          <label>ชื่อ-นามสกุล</label>
+
+          <input id="registerName"
+                 placeholder="ชื่อ นามสกุล"
+                 required>
+        </div>
+
+        <div class="form-group">
+          <label>Email</label>
+
+          <input id="registerEmail"
+                 type="email"
+                 placeholder="example@email.com"
+                 required>
+        </div>
+
+        <div class="form-group">
+          <label>เบอร์โทรศัพท์</label>
+
+          <input id="registerPhone"
+                 type="tel"
+                 placeholder="08xxxxxxxx"
+                 required>
+        </div>
+
+        <div class="form-group">
+          <label>Role</label>
+
+          <select id="registerRole">
+            <option value="user">
+              User - นักศึกษา/พนักงาน
+            </option>
+
+            <option value="admin">
+              Admin - ผู้ดูแลระบบ
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>รหัสผ่าน</label>
+
+          <input id="registerPassword"
+                 type="password"
+                 minlength="6"
+                 placeholder="อย่างน้อย 6 ตัวอักษร"
+                 required>
+        </div>
+
+        <button class="btn btn-primary"
+                style="width:100%"
+                type="submit">
+          สมัครสมาชิก
+        </button>
+
+      </form>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- =========================================================
+     APP
+========================================================= -->
+
+<section id="appScreen" class="hidden">
+
+<nav class="navbar">
+
+  <div class="container nav-inner">
+
+    <div class="logo-text">
+      🪑 Common Space
+    </div>
+
+    <div id="navLinks"
+         class="nav-links"></div>
+
+    <div class="nav-actions">
+
+      <span id="userBadge"
+            class="user-badge"></span>
+
+      <button class="btn btn-outline btn-sm"
+              onclick="toggleTheme()">
+        🌓
+      </button>
+
+      <button class="btn btn-outline btn-sm"
+              onclick="logout()">
+        ออกจากระบบ
+      </button>
+
+    </div>
+
+  </div>
+
+</nav>
+
+
+<main>
+
+<div class="container">
+
+<!-- =========================================================
+     USER HOME
+========================================================= -->
+
+<section id="userHome"
+         class="page hidden">
+
+  <div class="section-title">
+
+    <h2>🪑 จองโต๊ะและพื้นที่</h2>
+
+    <p>
+      เลือกวันที่ เวลา และประเภทพื้นที่
+      จากนั้นเลือกโต๊ะที่ต้องการ
+    </p>
+
+  </div>
+
+
+  <div class="card search-card">
+
+    <div class="search-grid">
+
+      <div class="form-group">
+        <label>วันที่</label>
+
+        <input id="bookingDate"
+               type="date">
+      </div>
+
+      <div class="form-group">
+        <label>เวลาเริ่มต้น</label>
+
+        <input id="startTime"
+               type="time"
+               value="09:00">
+      </div>
+
+      <div class="form-group">
+        <label>เวลาสิ้นสุด</label>
+
+        <input id="endTime"
+               type="time"
+               value="12:00">
+      </div>
+
+      <div class="form-group">
+        <label>ประเภทพื้นที่</label>
+
+        <select id="spaceType">
+          <option value="all">
+            ทุกประเภท
+          </option>
+
+          <option value="Work Desk">
+            Work Desk
+          </option>
+
+          <option value="Meeting">
+            Meeting
+          </option>
+
+          <option value="Quiet Zone">
+            Quiet Zone
+          </option>
+        </select>
+      </div>
+
+      <button class="btn btn-primary"
+              onclick="searchTables()">
+        🔎 ค้นหา
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <div class="floor-layout">
+
+    <!-- FLOOR PLAN -->
+
+    <div class="card floor-card">
+
+      <h3>แผนผังพื้นที่</h3>
+
+      <p style="
+        color:var(--muted);
+        font-size:12px;
+        margin-top:3px;
+      ">
+        คลิกโต๊ะที่มีสถานะ "ว่าง"
+        เพื่อเลือก
+      </p>
+
+      <div id="floorPlan"
+           class="floor-plan"></div>
+
+      <div class="legend">
+
+        <div class="legend-item">
+          <span class="legend-color"
+                style="background:#86efac"></span>
+          ว่าง
+        </div>
+
+        <div class="legend-item">
+          <span class="legend-color"
+                style="background:#fca5a5"></span>
+          มีคนจองแล้ว
+        </div>
+
+        <div class="legend-item">
+          <span class="legend-color"
+                style="background:#cbd5e1"></span>
+          ปิดปรับปรุง
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- SUMMARY -->
+
+    <div class="card booking-summary">
+
+      <h3>รายละเอียดการจอง</h3>
+
+      <div id="summaryContent"
+           class="summary-empty">
+        กรุณาค้นหาและเลือกโต๊ะ
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================================================
+     MY BOOKINGS
+========================================================= -->
+
+<section id="myBookings"
+         class="page hidden">
+
+  <div class="section-title">
+
+    <h2>📋 ประวัติการจองของฉัน</h2>
+
+    <p>
+      รายการจองที่ผ่านมาและรายการที่กำลังจะมาถึง
+    </p>
+
+  </div>
+
+  <div id="myBookingList"
+       class="booking-list"></div>
+
+</section>
+
+
+<!-- =========================================================
+     ADMIN DASHBOARD
+========================================================= -->
+
+<section id="adminDashboard"
+         class="page hidden">
+
+  <div class="section-title">
+
+    <h2>📊 Admin Dashboard</h2>
+
+    <p>
+      ภาพรวมการใช้งานพื้นที่ส่วนกลาง
+    </p>
+
+  </div>
+
+
+  <div class="kpi-grid">
+
+    <div class="card kpi">
+
+      <div class="kpi-icon">📅</div>
+
+      <h3 id="kpiBookings">0</h3>
+
+      <p>
+        จำนวนการจองทั้งหมดวันนี้
+      </p>
+
+    </div>
+
+
+    <div class="card kpi">
+
+      <div class="kpi-icon">🪑</div>
+
+      <h3 id="kpiActive">0</h3>
+
+      <p>
+        โต๊ะที่กำลังถูกใช้งาน
+      </p>
+
+    </div>
+
+
+    <div class="card kpi">
+
+      <div class="kpi-icon">⚠️</div>
+
+      <h3 id="kpiNoShow">0</h3>
+
+      <p>
+        จำนวน No-Show วันนี้
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div class="charts-grid">
+
+    <div class="card chart-card">
+
+      <h3>สัดส่วนประเภทพื้นที่ที่ถูกจอง</h3>
+
+      <div class="chart-wrapper">
+        <canvas id="pieChart"></canvas>
+      </div>
+
+    </div>
+
+
+    <div class="card chart-card">
+
+      <h3>ช่วงเวลาที่มีการใช้งานหนาแน่น</h3>
+
+      <div class="chart-wrapper">
+        <canvas id="barChart"></canvas>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================================================
+     ADMIN MANAGEMENT
+========================================================= -->
+
+<section id="adminManagement"
+         class="page hidden">
+
+  <div class="section-title">
+
+    <h2>⚙️ จัดการระบบหลังบ้าน</h2>
+
+    <p>
+      จัดการพื้นที่ Policy และรายการจอง
+    </p>
+
+  </div>
+
+
+  <!-- TABLE MANAGEMENT -->
+
+  <div class="card admin-section">
+
+    <div class="admin-header">
+
+      <div>
+        <h3>🪑 จัดการพื้นที่</h3>
+
+        <p style="
+          color:var(--muted);
+          font-size:12px;
+        ">
+          เพิ่ม / แก้ไข / ลบโต๊ะ
+          และเปิด-ปิด Maintenance Mode
+        </p>
+      </div>
+
+    </div>
+
+
+    <div class="management-grid">
+
+      <div class="card form-card">
+
+        <h4 id="tableFormTitle"
+            style="margin-bottom:15px">
+          เพิ่มโต๊ะ
+        </h4>
+
+        <form onsubmit="saveTable(event)">
+
+          <input id="editTableId"
+                 type="hidden">
+
+          <div class="form-group">
+            <label>ชื่อโต๊ะ</label>
+
+            <input id="tableName"
+                   placeholder="เช่น Table 13"
+                   required>
+          </div>
+
+          <div class="form-group">
+            <label>ประเภทพื้นที่</label>
+
+            <select id="tableType">
+
+              <option value="Work Desk">
+                Work Desk
+              </option>
+
+              <option value="Meeting">
+                Meeting
+              </option>
+
+              <option value="Quiet Zone">
+                Quiet Zone
+              </option>
+
+            </select>
+          </div>
+
+          <button class="btn btn-primary"
+                  type="submit">
+            บันทึก
+          </button>
+
+          <button class="btn btn-secondary"
+                  type="button"
+                  onclick="resetTableForm()">
+            ล้าง
+          </button>
+
+        </form>
+
+      </div>
+
+
+      <div id="adminTableList"
+           class="admin-table-list"></div>
+
+    </div>
+
+  </div>
+
+
+  <!-- POLICY -->
+
+  <div class="card admin-section">
+
+    <div class="admin-header">
+
+      <div>
+        <h3>⚙️ Policy Settings</h3>
+
+        <p style="
+          color:var(--muted);
+          font-size:12px;
+        ">
+          ตั้งเวลาเปิด-ปิดและจำนวนชั่วโมงสูงสุด
+        </p>
+      </div>
+
+    </div>
+
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:15px;
+    ">
+
+      <div class="form-group">
+        <label>เวลาเปิดระบบ</label>
+
+        <input id="policyOpen"
+               type="time">
+      </div>
+
+      <div class="form-group">
+        <label>เวลาปิดระบบ</label>
+
+        <input id="policyClose"
+               type="time">
+      </div>
+
+      <div class="form-group">
+        <label>
+          ชั่วโมงสูงสุดต่อวัน
+        </label>
+
+        <input id="policyMaxHours"
+               type="number"
+               min="1"
+               max="24">
+      </div>
+
+    </div>
+
+    <button class="btn btn-primary"
+            onclick="savePolicy()">
+      บันทึก Policy
+    </button>
+
+  </div>
+
+
+  <!-- BOOKING MANAGEMENT -->
+
+  <div class="card admin-section">
+
+    <div class="admin-header">
+
+      <div>
+        <h3>📋 จัดการคิวและผู้ใช้งาน</h3>
+
+        <p style="
+          color:var(--muted);
+          font-size:12px;
+        ">
+          อนุมัติ ปฏิเสธ ยกเลิก
+          และค้นหารายการจอง
+        </p>
+      </div>
+
+      <input id="adminSearch"
+             style="max-width:280px"
+             placeholder="ค้นหาชื่อ User / เบอร์โต๊ะ..."
+             oninput="renderAdminBookings()">
+
+    </div>
+
+
+    <div class="table-wrapper">
+
+      <table class="data-table">
+
+        <thead>
+
+          <tr>
+            <th>User</th>
+            <th>โต๊ะ</th>
+            <th>วันที่</th>
+            <th>เวลา</th>
+            <th>ประเภท</th>
+            <th>สถานะ</th>
+            <th>จัดการ</th>
+          </tr>
+
+        </thead>
+
+        <tbody id="adminBookingTable"></tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</section>
+
+</div>
+
+</main>
+</section>
+
+
+<div id="toastContainer"></div>
+
+
+<script>
+/* =========================================================
+   STORAGE
+========================================================= */
+
+const STORAGE = {
+  USERS:"common_space_users",
+  BOOKINGS:"common_space_bookings",
+  TABLES:"common_space_tables",
+  POLICY:"common_space_policy",
+  CURRENT_USER:"common_space_current_user",
+  THEME:"common_space_theme"
+};
+
+
+/* =========================================================
+   DEFAULT DATA
+========================================================= */
+
+const defaultTables = [
+  {id:1,name:"Table 01",type:"Work Desk",maintenance:false},
+  {id:2,name:"Table 02",type:"Work Desk",maintenance:false},
+  {id:3,name:"Table 03",type:"Meeting",maintenance:false},
+  {id:4,name:"Table 04",type:"Quiet Zone",maintenance:false},
+  {id:5,name:"Table 05",type:"Work Desk",maintenance:false},
+  {id:6,name:"Table 06",type:"Meeting",maintenance:false},
+  {id:7,name:"Table 07",type:"Work Desk",maintenance:false},
+  {id:8,name:"Table 08",type:"Quiet Zone",maintenance:false},
+  {id:9,name:"Table 09",type:"Work Desk",maintenance:false},
+  {id:10,name:"Table 10",type:"Meeting",maintenance:false},
+  {id:11,name:"Table 11",type:"Work Desk",maintenance:false},
+  {id:12,name:"Table 12",type:"Quiet Zone",maintenance:false}
+];
+
+const defaultPolicy = {
+  open:"08:00",
+  close:"20:00",
+  maxHours:3
+};
+
+
+/* =========================================================
+   INIT
+========================================================= */
+
+function initStorage(){
+
+  if(!localStorage.getItem(STORAGE.USERS)){
+
+    const admin = {
+      id:crypto.randomUUID(),
+      name:"System Administrator",
+      email:"admin@demo.com",
+      phone:"0800000000",
+      password:"admin123",
+      role:"admin"
+    };
+
+    localStorage.setItem(
+      STORAGE.USERS,
+      JSON.stringify([admin])
+    );
+  }
+
+  if(!localStorage.getItem(STORAGE.TABLES)){
+
+    localStorage.setItem(
+      STORAGE.TABLES,
+      JSON.stringify(defaultTables)
+    );
+  }
+
+  if(!localStorage.getItem(STORAGE.BOOKINGS)){
+
+    localStorage.setItem(
+      STORAGE.BOOKINGS,
+      JSON.stringify([])
+    );
+  }
+
+  if(!localStorage.getItem(STORAGE.POLICY)){
+
+    localStorage.setItem(
+      STORAGE.POLICY,
+      JSON.stringify(defaultPolicy)
+    );
+  }
+}
+
+
+function getUsers(){
+  return JSON.parse(
+    localStorage.getItem(STORAGE.USERS)||"[]"
+  );
+}
+
+function saveUsers(data){
+  localStorage.setItem(
+    STORAGE.USERS,
+    JSON.stringify(data)
+  );
+}
+
+function getBookings(){
+  return JSON.parse(
+    localStorage.getItem(STORAGE.BOOKINGS)||"[]"
+  );
+}
+
+function saveBookings(data){
+  localStorage.setItem(
+    STORAGE.BOOKINGS,
+    JSON.stringify(data)
+  );
+}
+
+function getTables(){
+  return JSON.parse(
+    localStorage.getItem(STORAGE.TABLES)||"[]"
+  );
+}
+
+function saveTables(data){
+  localStorage.setItem(
+    STORAGE.TABLES,
+    JSON.stringify(data)
+  );
+}
+
+function getPolicy(){
+  return JSON.parse(
+    localStorage.getItem(STORAGE.POLICY) ||
+    JSON.stringify(defaultPolicy)
+  );
+}
+
+function savePolicyData(data){
+  localStorage.setItem(
+    STORAGE.POLICY,
+    JSON.stringify(data)
+  );
+}
+
+function getCurrentUser(){
+  return JSON.parse(
+    localStorage.getItem(STORAGE.CURRENT_USER) ||
+    "null"
+  );
+}
+
+
+/* =========================================================
+   AUTH
+========================================================= */
+
+function switchAuth(mode){
+
+  const loginForm =
+    document.getElementById("loginForm");
+
+  const registerForm =
+    document.getElementById("registerForm");
+
+  const loginTab =
+    document.getElementById("loginTab");
+
+  const registerTab =
+    document.getElementById("registerTab");
+
+  const title =
+    document.getElementById("authTitle");
+
+  clearAuthMessage();
+
+  if(mode==="login"){
+
+    loginForm.classList.remove("hidden");
+    registerForm.classList.add("hidden");
+
+    loginTab.classList.add("active");
+    registerTab.classList.remove("active");
+
+    title.textContent="เข้าสู่ระบบ";
+
+  }else{
+
+    loginForm.classList.add("hidden");
+    registerForm.classList.remove("hidden");
+
+    loginTab.classList.remove("active");
+    registerTab.classList.add("active");
+
+    title.textContent="สมัครสมาชิก";
+  }
+}
+
+
+function showAuthMessage(message,type){
+
+  const box =
+    document.getElementById("authMessage");
+
+  box.textContent=message;
+
+  box.className=
+    `auth-message show ${type}`;
+}
+
+
+function clearAuthMessage(){
+
+  const box =
+    document.getElementById("authMessage");
+
+  box.textContent="";
+  box.className="auth-message";
+}
+
+
+/* =========================================================
+   REGISTER
+========================================================= */
+
+function register(event){
+
+  event.preventDefault();
+
+  const name =
+    document.getElementById("registerName")
+      .value.trim();
+
+  const email =
+    document.getElementById("registerEmail")
+      .value.trim()
+      .toLowerCase();
+
+  const phone =
+    document.getElementById("registerPhone")
+      .value.trim();
+
+  const password =
+    document.getElementById("registerPassword")
+      .value;
+
+  const role =
+    document.getElementById("registerRole")
+      .value;
+
+  const users=getUsers();
+
+  if(
+    users.some(user=>user.email===email)
+  ){
+
+    showAuthMessage(
+      "Email นี้ถูกใช้งานแล้ว",
+      "error"
+    );
+
+    return;
+  }
+
+  users.push({
+
+    id:crypto.randomUUID(),
+
+    name,
+    email,
+    phone,
+    password,
+    role
+  });
+
+  saveUsers(users);
+
+  showAuthMessage(
+    "สมัครสมาชิกสำเร็จ กรุณาเข้าสู่ระบบ",
+    "success"
+  );
+
+  event.target.reset();
+
+  setTimeout(()=>{
+    switchAuth("login");
+
+    document.getElementById("loginEmail")
+      .value=email;
+
+  },700);
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+function login(event){
+
+  event.preventDefault();
+
+  const email =
+    document.getElementById("loginEmail")
+      .value.trim()
+      .toLowerCase();
+
+  const password =
+    document.getElementById("loginPassword")
+      .value;
+
+  const user =
+    getUsers().find(
+      u =>
+        u.email===email &&
+        u.password===password
+    );
+
+  if(!user){
+
+    showAuthMessage(
+      "Email หรือรหัสผ่านไม่ถูกต้อง",
+      "error"
+    );
+
+    return;
+  }
+
+  localStorage.setItem(
+    STORAGE.CURRENT_USER,
+    JSON.stringify(user)
+  );
+
+  openApp(user);
+}
+
+
+function openApp(user){
+
+  document
+    .getElementById("authScreen")
+    .classList.add("hidden");
+
+  document
+    .getElementById("appScreen")
+    .classList.remove("hidden");
+
+  document
+    .getElementById("userBadge")
+    .textContent =
+      `${user.name} (${user.role.toUpperCase()})`;
+
+  buildNavigation(user.role);
+
+  processAutoRelease();
+
+  if(user.role==="admin"){
+
+    showPage("adminDashboard");
+
+  }else{
+
+    showPage("userHome");
+  }
+}
+
+
+function logout(){
+
+  localStorage.removeItem(
+    STORAGE.CURRENT_USER
+  );
+
+  location.reload();
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function buildNavigation(role){
+
+  const nav =
+    document.getElementById("navLinks");
+
+  if(role==="user"){
+
+    nav.innerHTML=`
+      <button id="nav-userHome"
+              onclick="showPage('userHome')">
+        🪑 จองโต๊ะ
+      </button>
+
+      <button id="nav-myBookings"
+              onclick="showPage('myBookings')">
+        📋 การจองของฉัน
+      </button>
+    `;
+
+  }else{
+
+    nav.innerHTML=`
+      <button id="nav-adminDashboard"
+              onclick="showPage('adminDashboard')">
+        📊 Dashboard
+      </button>
+
+      <button id="nav-adminManagement"
+              onclick="showPage('adminManagement')">
+        ⚙️ จัดการระบบ
+      </button>
+    `;
+  }
+}
+
+
+function showPage(pageId){
+
+  document
+    .querySelectorAll(".page")
+    .forEach(p=>p.classList.add("hidden"));
+
+  const page =
+    document.getElementById(pageId);
+
+  if(!page)return;
+
+  page.classList.remove("hidden");
+
+  document
+    .querySelectorAll(".nav-links button")
+    .forEach(b=>b.classList.remove("active"));
+
+  const navButton =
+    document.getElementById(
+      "nav-"+pageId
+    );
+
+  if(navButton)
+    navButton.classList.add("active");
+
+  if(pageId==="userHome"){
+
+    setDefaultDate();
+    renderFloorPlan();
+  }
+
+  if(pageId==="myBookings"){
+
+    processAutoRelease();
+    renderMyBookings();
+  }
+
+  if(pageId==="adminDashboard"){
+
+    processAutoRelease();
+    renderAdminDashboard();
+  }
+
+  if(pageId==="adminManagement"){
+
+    renderAdminTables();
+    renderPolicy();
+    renderAdminBookings();
+  }
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+let selectedTableId=null;
+
+
+function setDefaultDate(){
+
+  const input =
+    document.getElementById("bookingDate");
+
+  if(!input.value){
+
+    input.value =
+      new Date()
+        .toISOString()
+        .split("T")[0];
+  }
+}
+
+
+function searchTables(){
+
+  const date =
+    document.getElementById("bookingDate").value;
+
+  const start =
+    document.getElementById("startTime").value;
+
+  const end =
+    document.getElementById("endTime").value;
+
+  if(!date || !start || !end){
+
+    showToast(
+      "กรุณากรอกวันที่และเวลาให้ครบ",
+      "error"
+    );
+
+    return;
+  }
+
+  if(start>=end){
+
+    showToast(
+      "เวลาเริ่มต้นต้องน้อยกว่าเวลาสิ้นสุด",
+      "error"
+    );
+
+    return;
+  }
+
+  const policy=getPolicy();
+
+  if(
+    start<policy.open ||
+    end>policy.close
+  ){
+
+    showToast(
+      `ระบบเปิด ${policy.open} - ${policy.close}`,
+      "error"
+    );
+
+    return;
+  }
+
+  const duration =
+    timeToMinutes(end) -
+    timeToMinutes(start);
+
+  if(
+    duration >
+    Number(policy.maxHours)*60
+  ){
+
+    showToast(
+      `จองได้สูงสุด ${policy.maxHours} ชั่วโมง`,
+      "error"
+    );
+
+    return;
+  }
+
+  selectedTableId=null;
+
+  renderFloorPlan();
+
+  document.getElementById(
+    "summaryContent"
+  ).innerHTML=`
+    <div>
+      วันที่
+      <strong>${formatDate(date)}</strong>
+      <br>
+      เวลา
+      <strong>${start} - ${end}</strong>
+    </div>
+  `;
+}
+
+
+/* =========================================================
+   FLOOR PLAN
+========================================================= */
+
+function renderFloorPlan(){
+
+  const container =
+    document.getElementById("floorPlan");
+
+  if(!container)return;
+
+  const date =
+    document.getElementById("bookingDate").value;
+
+  const start =
+    document.getElementById("startTime").value;
+
+  const end =
+    document.getElementById("endTime").value;
+
+  const type =
+    document.getElementById("spaceType").value;
+
+  container.innerHTML="";
+
+  getTables().forEach(table=>{
+
+    if(
+      type!=="all" &&
+      table.type!==type
+    )return;
+
+    const status =
+      getTableStatus(
+        table,
+        date,
+        start,
+        end
+      );
+
+    const div =
+      document.createElement("div");
+
+    div.className=
+      `table-seat ${status}`;
+
+    if(
+      Number(selectedTableId)===
+      Number(table.id)
+    ){
+      div.classList.add("selected");
+    }
+
+    let text="ว่าง";
+
+    if(status==="booked")
+      text="มีคนจองแล้ว";
+
+    if(status==="maintenance")
+      text="ปิดปรับปรุง";
+
+    div.innerHTML=`
+      <div class="table-icon">
+        ${status==="maintenance"?"🔧":"🪑"}
+      </div>
+
+      <div class="table-name">
+        ${table.name}
+      </div>
+
+      <div class="table-type">
+        ${table.type}
+      </div>
+
+      <div style="font-size:10px;margin-top:4px">
+        ${text}
+      </div>
+    `;
+
+    if(status==="available"){
+
+      div.onclick=()=>{
+        selectTable(table.id);
+      };
+
+    }else{
+
+      div.onclick=()=>{
+
+        showToast(
+          status==="booked"
+            ?"โต๊ะนี้ถูกจองแล้วในช่วงเวลานี้"
+            :"โต๊ะนี้ปิดปรับปรุง",
+          "error"
+        );
+      };
+    }
+
+    container.appendChild(div);
+  });
+}
+
+
+function getTableStatus(
+  table,
+  date,
+  start,
+  end
+){
+
+  if(table.maintenance)
+    return "maintenance";
+
+  if(!date || !start || !end)
+    return "available";
+
+  const conflict =
+    getBookings().some(booking=>{
+
+      if(
+        Number(booking.tableId)!==
+        Number(table.id)
+      )return false;
+
+      if(booking.date!==date)
+        return false;
+
+      if(
+        ![
+          "pending",
+          "approved",
+          "checked-in"
+        ].includes(booking.status)
+      )return false;
+
+      return isTimeOverlap(
+        start,
+        end,
+        booking.startTime,
+        booking.endTime
+      );
+    });
+
+  return conflict?"booked":"available";
+}
+
+
+function selectTable(id){
+
+  selectedTableId=id;
+
+  renderFloorPlan();
+
+  renderBookingSummary();
+}
+
+
+function renderBookingSummary(){
+
+  const table =
+    getTables().find(
+      t =>
+        Number(t.id)===
+        Number(selectedTableId)
+    );
+
+  if(!table)return;
+
+  const date =
+    document.getElementById("bookingDate").value;
+
+  const start =
+    document.getElementById("startTime").value;
+
+  const end =
+    document.getElementById("endTime").value;
+
+  document.getElementById(
+    "summaryContent"
+  ).innerHTML=`
+
+    <div class="summary-row">
+      <span>โต๊ะ</span>
+      <strong>${table.name}</strong>
+    </div>
+
+    <div class="summary-row">
+      <span>ประเภท</span>
+      <strong>${table.type}</strong>
+    </div>
+
+    <div class="summary-row">
+      <span>วันที่</span>
+      <strong>${formatDate(date)}</strong>
+    </div>
+
+    <div class="summary-row">
+      <span>เวลา</span>
+      <strong>${start} - ${end}</strong>
+    </div>
+
+    <button class="btn btn-primary"
+            style="width:100%;margin-top:18px"
+            onclick="createBooking()">
+      ✓ ยืนยันการจอง
+    </button>
+  `;
+}
+
+
+/* =========================================================
+   BOOKING LOGIC
+========================================================= */
+
+function createBooking(){
+
+  const user=getCurrentUser();
+
+  if(!user)return;
+
+  const date =
+    document.getElementById("bookingDate").value;
+
+  const start =
+    document.getElementById("startTime").value;
+
+  const end =
+    document.getElementById("endTime").value;
+
+  const table =
+    getTables().find(
+      t =>
+        Number(t.id)===
+        Number(selectedTableId)
+    );
+
+  if(!table){
+
+    showToast(
+      "กรุณาเลือกโต๊ะ",
+      "error"
+    );
+
+    return;
+  }
+
+  if(table.maintenance){
+
+    showToast(
+      "โต๊ะนี้อยู่ในโหมด Maintenance",
+      "error"
+    );
+
+    return;
+  }
+
+  const policy=getPolicy();
+
+  const duration =
+    timeToMinutes(end) -
+    timeToMinutes(start);
+
+  /* จำกัด 3 ชั่วโมง / วัน */
+
+  if(
+    duration >
+    Number(policy.maxHours)*60
+  ){
+
+    showToast(
+      `จองได้สูงสุด ${policy.maxHours} ชั่วโมง`,
+      "error"
+    );
+
+    return;
+  }
+
+  /* ตรวจเวลาทำการ */
+
+  if(
+    start<policy.open ||
+    end>policy.close
+  ){
+
+    showToast(
+      `ระบบเปิด ${policy.open} - ${policy.close}`,
+      "error"
+    );
+
+    return;
+  }
+
+  const bookings=getBookings();
+
+  /* Time Conflict */
+
+  const conflict =
+    bookings.some(booking=>{
+
+      if(
+        Number(booking.tableId)!==
+        Number(table.id)
+      )return false;
+
+      if(booking.date!==date)
+        return false;
+
+      if(
+        ![
+          "pending",
+          "approved",
+          "checked-in"
+        ].includes(booking.status)
+      )return false;
+
+      return isTimeOverlap(
+        start,
+        end,
+        booking.startTime,
+        booking.endTime
+      );
+    });
+
+  if(conflict){
+
+    showToast(
+      "เวลานี้มีการจองโต๊ะดังกล่าวแล้ว",
+      "error"
+    );
+
+    renderFloorPlan();
+
+    return;
+  }
+
+  /* จำกัดชั่วโมงรวมต่อวัน */
+
+  const dailyMinutes =
+    bookings
+      .filter(booking=>
+        booking.userId===user.id &&
+        booking.date===date &&
+        [
+          "pending",
+          "approved",
+          "checked-in"
+        ].includes(booking.status)
+      )
+      .reduce(
+        (total,booking)=>
+          total+
+          timeToMinutes(booking.endTime)-
+          timeToMinutes(booking.startTime),
+        0
+      );
+
+  if(
+    dailyMinutes+duration >
+    Number(policy.maxHours)*60
+  ){
+
+    showToast(
+      `คุณจองได้สูงสุด ${policy.maxHours} ชั่วโมงต่อวัน`,
+      "error"
+    );
+
+    return;
+  }
+
+  const booking={
+
+    id:crypto.randomUUID(),
+
+    userId:user.id,
+
+    userName:user.name,
+
+    userEmail:user.email,
+
+    tableId:table.id,
+
+    tableName:table.name,
+
+    tableType:table.type,
+
+    date,
+
+    startTime:start,
+
+    endTime:end,
+
+    status:"approved",
+
+    checkedInAt:null,
+
+    createdAt:new Date().toISOString()
+  };
+
+  bookings.push(booking);
+
+  saveBookings(bookings);
+
+  showToast(
+    "จองโต๊ะสำเร็จ",
+    "success"
+  );
+
+  selectedTableId=null;
+
+  renderFloorPlan();
+
+  document.getElementById(
+    "summaryContent"
+  ).innerHTML=`
+    <div style="
+      text-align:center;
+      color:var(--green);
+      padding:20px;
+    ">
+      ✓ บันทึกการจองเรียบร้อยแล้ว
+    </div>
+  `;
+
+  setTimeout(()=>{
+    showPage("myBookings");
+  },600);
+}
+
+
+/* =========================================================
+   MY BOOKINGS
+========================================================= */
+
+function renderMyBookings(){
+
+  const user=getCurrentUser();
+
+  const container =
+    document.getElementById("myBookingList");
+
+  if(!container || !user)return;
+
+  const bookings =
+    getBookings()
+      .filter(
+        b=>b.userId===user.id
+      )
+      .sort(
+        (a,b)=>
+          new Date(`${b.date}T${b.startTime}`)-
+          new Date(`${a.date}T${a.startTime}`)
+      );
+
+  container.innerHTML="";
+
+  if(!bookings.length){
+
+    container.innerHTML=`
+      <div class="card"
+           style="padding:40px;text-align:center;color:var(--muted)">
+        ยังไม่มีประวัติการจอง
+      </div>
+    `;
+
+    return;
+  }
+
+  bookings.forEach(booking=>{
+
+    const card =
+      document.createElement("div");
+
+    card.className=
+      "card booking-card";
+
+    const status =
+      getStatusLabel(booking.status);
+
+    const start =
+      new Date(
+        `${booking.date}T${booking.startTime}`
+      );
+
+    const end =
+      new Date(
+        `${booking.date}T${booking.endTime}`
+      );
+
+    const now=new Date();
+
+    let actions="";
+
+    /* Cancel */
+
+    if(
+      booking.status==="approved" &&
+      now<start
+    ){
+
+      actions+=`
+        <button class="btn btn-danger btn-sm"
+                onclick="cancelBooking('${booking.id}')">
+          ยกเลิกการจอง
+        </button>
+      `;
+    }
+
+    /* Check-in */
+
+    if(
+      booking.status==="approved" &&
+      now>=start &&
+      now<=end
+    ){
+
+      actions+=`
+        <button class="btn btn-success btn-sm"
+                onclick="checkIn('${booking.id}')">
+          ✓ เช็กอินเข้าใช้งาน
+        </button>
+      `;
+    }
+
+    card.innerHTML=`
+
+      <div>
+
+        <h3>
+          ${booking.tableName}
+        </h3>
+
+        <div class="booking-meta">
+
+          <span>
+            📅 ${formatDate(booking.date)}
+          </span>
+
+          <span>
+            ⏰ ${booking.startTime} - ${booking.endTime}
+          </span>
+
+          <span>
+            📍 ${booking.tableType}
+          </span>
+
+        </div>
+
+        <span class="status ${status.class}">
+          ${status.text}
+        </span>
+
+      </div>
+
+      <div class="booking-actions">
+        ${actions}
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+
+function cancelBooking(id){
+
+  const bookings=getBookings();
+
+  const booking =
+    bookings.find(
+      b=>b.id===id
+    );
+
+  if(!booking)return;
+
+  const start =
+    new Date(
+      `${booking.date}T${booking.startTime}`
+    );
+
+  if(new Date()>=start){
+
+    showToast(
+      "ไม่สามารถยกเลิกหลังเริ่มใช้งานได้",
+      "error"
+    );
+
+    return;
+  }
+
+  booking.status="cancelled";
+
+  saveBookings(bookings);
+
+  showToast(
+    "ยกเลิกการจองแล้ว",
+    "success"
+  );
+
+  renderMyBookings();
+}
+
+
+function checkIn(id){
+
+  const bookings=getBookings();
+
+  const booking =
+    bookings.find(
+      b=>b.id===id
+    );
+
+  if(!booking)return;
+
+  const now=new Date();
+
+  const start =
+    new Date(
+      `${booking.date}T${booking.startTime}`
+    );
+
+  const end =
+    new Date(
+      `${booking.date}T${booking.endTime}`
+    );
+
+  const release =
+    new Date(
+      start.getTime()+15*60*1000
+    );
+
+  if(now<start){
+
+    showToast(
+      "ยังไม่ถึงเวลาเริ่มใช้งาน",
+      "error"
+    );
+
+    return;
+  }
+
+  if(now>release){
+
+    booking.status="no-show";
+
+    saveBookings(bookings);
+
+    showToast(
+      "เลยเวลา Check-in 15 นาที ระบบคืนโต๊ะแล้ว",
+      "error"
+    );
+
+    renderMyBookings();
+    renderFloorPlan();
+
+    return;
+  }
+
+  if(now>end){
+
+    showToast(
+      "หมดเวลาใช้งานแล้ว",
+      "error"
+    );
+
+    return;
+  }
+
+  booking.status="checked-in";
+
+  booking.checkedInAt =
+    now.toISOString();
+
+  saveBookings(bookings);
+
+  showToast(
+    "Check-in สำเร็จ",
+    "success"
+  );
+
+  renderMyBookings();
+}
+
+
+/* =========================================================
+   AUTO RELEASE
+========================================================= */
+
+function processAutoRelease(){
+
+  const bookings=getBookings();
+
+  const now=new Date();
+
+  let changed=false;
+
+  bookings.forEach(booking=>{
+
+    if(
+      booking.status!=="approved"
+    )return;
+
+    const start =
+      new Date(
+        `${booking.date}T${booking.startTime}`
+      );
+
+    const release =
+      new Date(
+        start.getTime()+15*60*1000
+      );
+
+    if(now>release){
+
+      booking.status="no-show";
+
+      changed=true;
+    }
+  });
+
+  if(changed)
+    saveBookings(bookings);
+}
+
+
+/* =========================================================
+   ADMIN DASHBOARD
+========================================================= */
+
+let pieChart=null;
+let barChart=null;
+
+
+function renderAdminDashboard(){
+
+  const today =
+    new Date()
+      .toISOString()
+      .split("T")[0];
+
+  const bookings=getBookings();
+
+  const todayBookings =
+    bookings.filter(
+      b=>b.date===today
+    );
+
+  document.getElementById(
+    "kpiBookings"
+  ).textContent=
+    todayBookings.length;
+
+  const now=new Date();
+
+  const active =
+    todayBookings.filter(b=>{
+
+      if(b.status!=="checked-in")
+        return false;
+
+      const start =
+        new Date(
+          `${b.date}T${b.startTime}`
+        );
+
+      const end =
+        new Date(
+          `${b.date}T${b.endTime}`
+        );
+
+      return now>=start && now<=end;
+    });
+
+  document.getElementById(
+    "kpiActive"
+  ).textContent=
+    active.length;
+
+  document.getElementById(
+    "kpiNoShow"
+  ).textContent=
+    todayBookings.filter(
+      b=>b.status==="no-show"
+    ).length;
+
+  renderCharts(todayBookings);
+}
+
+
+function renderCharts(bookings){
+
+  const typeCount={
+    "Work Desk":0,
+    "Meeting":0,
+    "Quiet Zone":0
+  };
+
+  bookings.forEach(b=>{
+
+    if(
+      typeCount[b.tableType]!==undefined
+    ){
+
+      typeCount[b.tableType]++;
+    }
+  });
+
+  if(pieChart)
+    pieChart.destroy();
+
+  pieChart =
+    new Chart(
+      document.getElementById("pieChart"),
+      {
+        type:"pie",
+
+        data:{
+          labels:Object.keys(typeCount),
+
+          datasets:[{
+            data:Object.values(typeCount),
+
+            backgroundColor:[
+              "#f97316",
+              "#fb923c",
+              "#fdba74"
+            ],
+
+            borderWidth:0
+          }]
+        },
+
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+
+          plugins:{
+            legend:{
+              position:"bottom"
+            }
+          }
+        }
+      }
+    );
+
+
+  const slots=[
+    "08-10",
+    "10-12",
+    "12-14",
+    "14-16",
+    "16-18",
+    "18-20"
+  ];
+
+  const counts=
+    slots.map(()=>0);
+
+  bookings.forEach(b=>{
+
+    const start=
+      timeToMinutes(b.startTime);
+
+    const index=
+      Math.floor(
+        (start-8*60)/120
+      );
+
+    if(
+      index>=0 &&
+      index<counts.length
+    ){
+
+      counts[index]++;
+    }
+  });
+
+  if(barChart)
+    barChart.destroy();
+
+  barChart =
+    new Chart(
+      document.getElementById("barChart"),
+      {
+        type:"bar",
+
+        data:{
+          labels:slots,
+
+          datasets:[{
+            label:"จำนวนการใช้งาน",
+
+            data:counts,
+
+            backgroundColor:"#f97316",
+
+            borderRadius:7
+          }]
+        },
+
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+
+          scales:{
+            y:{
+              beginAtZero:true,
+              ticks:{
+                precision:0
+              }
+            }
+          },
+
+          plugins:{
+            legend:{
+              display:false
+            }
+          }
+        }
+      }
+    );
+}
+
+
+/* =========================================================
+   ADMIN TABLE MANAGEMENT
+========================================================= */
+
+function renderAdminTables(){
+
+  const container =
+    document.getElementById(
+      "adminTableList"
+    );
+
+  container.innerHTML="";
+
+  getTables().forEach(table=>{
+
+    const item =
+      document.createElement("div");
+
+    item.className=
+      "admin-table-item";
+
+    item.innerHTML=`
+
+      <div>
+
+        <strong>
+          ${table.name}
+        </strong>
+
+        <div style="
+          color:var(--muted);
+          font-size:11px;
+        ">
+          ${table.type}
+        </div>
+
+        <div style="
+          color:${table.maintenance
+            ?"var(--red)"
+            :"var(--green)"};
+          font-size:11px;
+          margin-top:3px;
+        ">
+          ${
+            table.maintenance
+              ?"🔧 ปิดปรับปรุง"
+              :"● เปิดใช้งาน"
+          }
+        </div>
+
+      </div>
+
+      <div class="table-actions">
+
+        <button class="btn btn-outline btn-sm"
+                onclick="editTable(${table.id})">
+          แก้ไข
+        </button>
+
+        <button class="btn ${
+          table.maintenance
+            ?"btn-success"
+            :"btn-warning"
+        } btn-sm"
+                onclick="toggleMaintenance(${table.id})">
+
+          ${
+            table.maintenance
+              ?"เปิดใช้งาน"
+              :"ปิดปรับปรุง"
+          }
+
+        </button>
+
+        <button class="btn btn-danger btn-sm"
+                onclick="deleteTable(${table.id})">
+          ลบ
+        </button>
+
+      </div>
+    `;
+
+    container.appendChild(item);
+  });
+}
+
+
+function saveTable(event){
+
+  event.preventDefault();
+
+  const id =
+    document.getElementById(
+      "editTableId"
+    ).value;
+
+  const name =
+    document.getElementById(
+      "tableName"
+    ).value.trim();
+
+  const type =
+    document.getElementById(
+      "tableType"
+    ).value;
+
+  const tables=getTables();
+
+  if(id){
+
+    const table =
+      tables.find(
+        t=>Number(t.id)===Number(id)
+      );
+
+    if(table){
+
+      table.name=name;
+      table.type=type;
+    }
+
+    showToast(
+      "แก้ไขโต๊ะสำเร็จ",
+      "success"
+    );
+
+  }else{
+
+    tables.push({
+      id:Date.now(),
+      name,
+      type,
+      maintenance:false
+    });
+
+    showToast(
+      "เพิ่มโต๊ะสำเร็จ",
+      "success"
+    );
+  }
+
+  saveTables(tables);
+
+  resetTableForm();
+
+  renderAdminTables();
+}
+
+
+function editTable(id){
+
+  const table =
+    getTables().find(
+      t=>Number(t.id)===Number(id)
+    );
+
+  if(!table)return;
+
+  document.getElementById(
+    "editTableId"
+  ).value=table.id;
+
+  document.getElementById(
+    "tableName"
+  ).value=table.name;
+
+  document.getElementById(
+    "tableType"
+  ).value=table.type;
+
+  document.getElementById(
+    "tableFormTitle"
+  ).textContent="แก้ไขข้อมูลโต๊ะ";
+}
+
+
+function resetTableForm(){
+
+  document.getElementById(
+    "editTableId"
+  ).value="";
+
+  document.getElementById(
+    "tableName"
+  ).value="";
+
+  document.getElementById(
+    "tableType"
+  ).value="Work Desk";
+
+  document.getElementById(
+    "tableFormTitle"
+  ).textContent="เพิ่มโต๊ะ";
+}
+
+
+function deleteTable(id){
+
+  const hasBooking =
+    getBookings().some(
+      b=>
+        Number(b.tableId)===Number(id) &&
+        [
+          "pending",
+          "approved",
+          "checked-in"
+        ].includes(b.status)
+    );
+
+  if(hasBooking){
+
+    showToast(
+      "ไม่สามารถลบโต๊ะที่มีการจองอยู่ได้",
+      "error"
+    );
+
+    return;
+  }
+
+  if(!confirm("ต้องการลบโต๊ะนี้หรือไม่?"))
+    return;
+
+  saveTables(
+    getTables().filter(
+      t=>Number(t.id)!==Number(id)
+    )
+  );
+
+  renderAdminTables();
+
+  showToast(
+    "ลบโต๊ะแล้ว",
+    "success"
+  );
+}
+
+
+function toggleMaintenance(id){
+
+  const tables=getTables();
+
+  const table =
+    tables.find(
+      t=>Number(t.id)===Number(id)
+    );
+
+  if(!table)return;
+
+  table.maintenance=
+    !table.maintenance;
+
+  saveTables(tables);
+
+  renderAdminTables();
+
+  showToast(
+    table.maintenance
+      ?"เปิด Maintenance Mode แล้ว"
+      :"เปิดใช้งานโต๊ะแล้ว",
+    "success"
+  );
+}
+
+
+/* =========================================================
+   POLICY SETTINGS
+========================================================= */
+
+function renderPolicy(){
+
+  const policy=getPolicy();
+
+  document.getElementById(
+    "policyOpen"
+  ).value=policy.open;
+
+  document.getElementById(
+    "policyClose"
+  ).value=policy.close;
+
+  document.getElementById(
+    "policyMaxHours"
+  ).value=policy.maxHours;
+}
+
+
+function savePolicy(){
+
+  const open =
+    document.getElementById(
+      "policyOpen"
+    ).value;
+
+  const close =
+    document.getElementById(
+      "policyClose"
+    ).value;
+
+  const maxHours =
+    Number(
+      document.getElementById(
+        "policyMaxHours"
+      ).value
+    );
+
+  if(open>=close){
+
+    showToast(
+      "เวลาเปิดต้องน้อยกว่าเวลาปิด",
+      "error"
+    );
+
+    return;
+  }
+
+  if(
+    !maxHours ||
+    maxHours<1
+  ){
+
+    showToast(
+      "จำนวนชั่วโมงไม่ถูกต้อง",
+      "error"
+    );
+
+    return;
+  }
+
+  savePolicyData({
+    open,
+    close,
+    maxHours
+  });
+
+  showToast(
+    "บันทึก Policy สำเร็จ",
+    "success"
+  );
+}
+
+
+/* =========================================================
+   ADMIN BOOKING MANAGEMENT
+========================================================= */
+
+function renderAdminBookings(){
+
+  const tbody =
+    document.getElementById(
+      "adminBookingTable"
+    );
+
+  if(!tbody)return;
+
+  const keyword =
+    (
+      document.getElementById(
+        "adminSearch"
+      )?.value || ""
+    )
+    .trim()
+    .toLowerCase();
+
+  const bookings =
+    getBookings()
+      .filter(b=>{
+
+        if(!keyword)return true;
+
+        return (
+          b.userName.toLowerCase()
+            .includes(keyword)
+          ||
+          b.tableName.toLowerCase()
+            .includes(keyword)
+        );
+      })
+      .sort(
+        (a,b)=>
+          new Date(`${b.date}T${b.startTime}`)-
+          new Date(`${a.date}T${a.startTime}`)
+      );
+
+  tbody.innerHTML="";
+
+  if(!bookings.length){
+
+    tbody.innerHTML=`
+      <tr>
+        <td colspan="7"
+            style="
+              text-align:center;
+              padding:30px;
+              color:var(--muted)
+            ">
+          ไม่พบรายการ
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  bookings.forEach(b=>{
+
+    const status =
+      getStatusLabel(b.status);
+
+    const tr =
+      document.createElement("tr");
+
+    tr.innerHTML=`
+
+      <td>
+        <strong>
+          ${escapeHTML(b.userName)}
+        </strong>
+
+        <div style="
+          color:var(--muted);
+          font-size:10px;
+        ">
+          ${escapeHTML(b.userEmail)}
+        </div>
+      </td>
+
+      <td>
+        ${escapeHTML(b.tableName)}
+      </td>
+
+      <td>
+        ${formatDate(b.date)}
+      </td>
+
+      <td>
+        ${b.startTime} - ${b.endTime}
+      </td>
+
+      <td>
+        ${escapeHTML(b.tableType)}
+      </td>
+
+      <td>
+        <span class="status ${status.class}">
+          ${status.text}
+        </span>
+      </td>
+
+      <td>
+
+        ${
+          b.status==="pending"
+          ?`
+            <button class="btn btn-success btn-sm"
+                    onclick="
+                      adminBookingAction(
+                        '${b.id}',
+                        'approved'
+                      )
+                    ">
+              อนุมัติ
+            </button>
+
+            <button class="btn btn-danger btn-sm"
+                    onclick="
+                      adminBookingAction(
+                        '${b.id}',
+                        'rejected'
+                      )
+                    ">
+              ปฏิเสธ
+            </button>
+          `
+          :""
+        }
+
+        ${
+          [
+            "pending",
+            "approved",
+            "checked-in"
+          ].includes(b.status)
+          ?`
+            <button class="btn btn-warning btn-sm"
+                    onclick="
+                      adminBookingAction(
+                        '${b.id}',
+                        'cancelled'
+                      )
+                    ">
+              ยกเลิก
+            </button>
+          `
+          :""
+        }
+
+      </td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+}
+
+
+function adminBookingAction(
+  id,
+  action
+){
+
+  const bookings=getBookings();
+
+  const booking =
+    bookings.find(
+      b=>b.id===id
+    );
+
+  if(!booking)return;
+
+  booking.status=action;
+
+  saveBookings(bookings);
+
+  showToast(
+    `เปลี่ยนสถานะเป็น ${getStatusLabel(action).text}`,
+    "success"
+  );
+
+  renderAdminBookings();
+  renderAdminDashboard();
+}
+
+
+/* =========================================================
+   UTILITIES
+========================================================= */
+
+function timeToMinutes(time){
+
+  const [h,m]=
+    time.split(":").map(Number);
+
+  return h*60+m;
+}
+
+
+function isTimeOverlap(
+  startA,
+  endA,
+  startB,
+  endB
+){
+
+  const aStart=timeToMinutes(startA);
+  const aEnd=timeToMinutes(endA);
+
+  const bStart=timeToMinutes(startB);
+  const bEnd=timeToMinutes(endB);
+
+  return (
+    aStart<bEnd &&
+    aEnd>bStart
+  );
+}
+
+
+function formatDate(date){
+
+  if(!date)return"-";
+
+  return new Date(
+    `${date}T00:00:00`
+  ).toLocaleDateString(
+    "th-TH",
+    {
+      year:"numeric",
+      month:"short",
+      day:"numeric"
+    }
+  );
+}
+
+
+function getStatusLabel(status){
+
+  const map={
+
+    pending:{
+      text:"รออนุมัติ",
+      class:"status-pending"
+    },
+
+    approved:{
+      text:"อนุมัติแล้ว",
+      class:"status-approved"
+    },
+
+    "checked-in":{
+      text:"กำลังใช้งาน",
+      class:"status-checked"
+    },
+
+    cancelled:{
+      text:"ยกเลิก",
+      class:"status-cancelled"
+    },
+
+    rejected:{
+      text:"ปฏิเสธ",
+      class:"status-rejected"
+    },
+
+    "no-show":{
+      text:"ถูกยกเลิกเนื่องจากไม่มาแสดงตัว",
+      class:"status-noshow"
+    }
+  };
+
+  return map[status] || {
+    text:status,
+    class:""
+  };
+}
+
+
+function escapeHTML(value){
+
+  return String(value)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+
+/* =========================================================
+   DARK / LIGHT MODE
+========================================================= */
+
+function toggleTheme(){
+
+  document.body.classList.toggle("dark");
+
+  const theme =
+    document.body.classList.contains("dark")
+      ?"dark"
+      :"light";
+
+  localStorage.setItem(
+    STORAGE.THEME,
+    theme
+  );
+}
+
+
+function loadTheme(){
+
+  if(
+    localStorage.getItem(
+      STORAGE.THEME
+    )==="dark"
+  ){
+
+    document.body.classList.add("dark");
+  }
+}
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+function showToast(
+  message,
+  type="success"
+){
+
+  const container =
+    document.getElementById(
+      "toastContainer"
+    );
+
+  const toast =
+    document.createElement("div");
+
+  toast.className=
+    `toast ${type}`;
+
+  toast.textContent=message;
+
+  container.appendChild(toast);
+
+  setTimeout(()=>{
+    toast.remove();
+  },3500);
+}
+
+
+/* =========================================================
+   AUTO REFRESH
+========================================================= */
+
+setInterval(()=>{
+
+  const user=getCurrentUser();
+
+  if(!user)return;
+
+  const before=
+    JSON.stringify(getBookings());
+
+  processAutoRelease();
+
+  const after=
+    JSON.stringify(getBookings());
+
+  if(before!==after){
+
+    if(user.role==="user"){
+
+      renderMyBookings();
+      renderFloorPlan();
+
+    }else{
+
+      renderAdminDashboard();
+      renderAdminBookings();
+    }
+  }
+
+},30000);
+
+
+/* =========================================================
+   EVENT LISTENERS
+========================================================= */
+
+[
+  "bookingDate",
+  "startTime",
+  "endTime",
+  "spaceType"
+].forEach(id=>{
+
+  document
+    .getElementById(id)
+    ?.addEventListener(
+      "change",
+      ()=>{
+        selectedTableId=null;
+        renderFloorPlan();
+      }
+    );
+});
+
+
+/* =========================================================
+   START
+========================================================= */
+
+initStorage();
+loadTheme();
+
+const savedUser=getCurrentUser();
+
+if(savedUser){
+
+  openApp(savedUser);
+
+}else{
+
+  document
+    .getElementById("authScreen")
+    .classList.remove("hidden");
+
+  document
+    .getElementById("appScreen")
+    .classList.add("hidden");
+}
+</script>
+
+</body>
+</html>
